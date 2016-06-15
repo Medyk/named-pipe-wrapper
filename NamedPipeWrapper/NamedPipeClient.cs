@@ -51,6 +51,11 @@ namespace NamedPipeWrapper
         public event ConnectionEventHandler<TRead, TWrite> Disconnected;
 
         /// <summary>
+        /// Invoked when the client connects to the server.
+        /// </summary>
+        public event ConnectionEventHandler<TRead, TWrite> Connected;
+
+        /// <summary>
         /// Invoked whenever an exception is thrown during a read or write operation on the named pipe.
         /// </summary>
         public event PipeExceptionEventHandler Error;
@@ -156,9 +161,12 @@ namespace NamedPipeWrapper
             _connection.Disconnected += OnDisconnected;
             _connection.ReceiveMessage += OnReceiveMessage;
             _connection.Error += ConnectionOnError;
-            _connection.Open();
 
-            _connected.Set();
+            if (Connected != null)
+                Connected(_connection); // fire event
+
+            _connected.Set(); // signal
+            _connection.Open(); // make sure Connected get fired before any messages
         }
 
         private void OnDisconnected(NamedPipeConnection<TRead, TWrite> connection)
