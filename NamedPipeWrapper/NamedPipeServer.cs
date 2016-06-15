@@ -159,14 +159,14 @@ namespace NamedPipeWrapper
                 connection.ReceiveMessage += ClientOnReceiveMessage;
                 connection.Disconnected += ClientOnDisconnected;
                 connection.Error += ConnectionOnError;
-                connection.Open();
 
                 lock (_connections)
                 {
                     _connections.Add(connection);
                 }
 
-                ClientOnConnected(connection);
+                ClientOnConnected(connection); // make sure ClientConnected event is fired first
+                connection.Open(); // prevent ClientMessage event before ClientConnected event
             }
             // Catch the IOException that is raised if the pipe is broken or disconnected.
             catch (Exception e)
